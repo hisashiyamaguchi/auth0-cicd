@@ -1,0 +1,37 @@
+version: 2.0
+
+jobs:
+  build:
+    docker:
+      - image: node:12
+    steps:
+      - checkout
+      - run:
+          name: Install Auth0 Deploy CLI
+          command: npm i -g auth0-deploy-cli
+      - run:
+          name: Push all changes to Auth0 development tenant
+          command: a0deploy import -c dev.json -i ./tenant/tenant.yaml
+  deploy-master:
+    docker:
+      - image: node:12
+    steps:
+      - checkout
+      - run:
+          name: Install Auth0 Deploy CLI
+          command: npm i -g auth0-deploy-cli
+      - run:
+          name: Push all changes to Auth0 production tenant
+          command: a0deploy import -c prod.json -i ./tenant/tenant.yaml
+
+workflows:
+  version: 2
+  build-and-deploy-master:
+    jobs:
+      - build
+      - deploy-master:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
